@@ -1,4 +1,5 @@
 const db = require('../database/models');
+const Sequelize = require('sequelize');
 
 module.exports = {
     getProducts,
@@ -24,14 +25,16 @@ async function addProduct(req, res) {
         const product = await db.Products.create({
             name: req.body.name,
             price: req.body.price,
-        }).then((result) => {
+        }).then(async (result) => {
             console.log('Created product', res.id);
             try {
-                const itemToProduct = db.ItemsInProducts.create({
+                let itemToProduct;
+                await db.ItemsInProducts.create({
                     itemId: req.body.itemId,
                     productId: result.id,
-                });
-                res.status(201).json({ itemToProduct })
+                    qty: req.body.qty,
+                }).then((res) => itemToProduct = res);
+                res.status(201).json({itemToProduct})
             } catch (e) {
                 console.log(e);
                 res.status(500).json({
@@ -64,16 +67,33 @@ async function addItemToProduct(req, res) {
 }
 
 async function updateProduct(req, res) {
-    const param = req.params.id;
-
+    const id = req.params.id;
     try {
-        const product = await db.Products.findByPk(param);
+        const product = await db.Products.findOne({
+            where: {
+                id
+            },
+            include: {
+                model: db.ItemsInProducts,
+                attributes: [ 'itemId', 'qty' ],
+                where: {
+                    productId: {
+                        [Sequelize.Op.eq]: id
+                    }
+                },
+            }
+        });
         if ( product === null) {
             console.log('there is no products');
         }
-        product.name = req.body.name;
-        product.price = req.body.price;
-        await product.save();
+        await product.update({
+            name: req.body.name,
+            netCost: req.body.netCost,
+            ItemsInProducts: {
+                itemId: req.body.itemId,
+                qty: req.body.qty,
+            }
+        });
         res.status(200).json({ product })
     } catch (e) {
         console.log(e);
