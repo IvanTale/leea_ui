@@ -6,6 +6,7 @@ module.exports = {
     addProduct,
     addItemToProduct,
     updateProduct,
+    addProductBulk,
 }
 
 async function getProducts(req,res) {
@@ -26,7 +27,6 @@ async function addProduct(req, res) {
             name: req.body.name,
             price: req.body.price,
         }).then(async (result) => {
-            console.log('Created product', res.id);
             try {
                 let itemToProduct;
                 await db.ItemsInProducts.create({
@@ -35,6 +35,39 @@ async function addProduct(req, res) {
                     qty: req.body.qty,
                 }).then((res) => itemToProduct = res);
                 res.status(201).json({itemToProduct})
+            } catch (e) {
+                console.log(e);
+                res.status(500).json({
+                    message: "Server error"
+                })
+            }
+        });
+        res.status(201).json({ product })
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            message: "Server error"
+        })
+    }
+}
+
+async function addProductBulk(req, res) {
+    try {
+        let productId;
+        db.Products.afterCreate((products, option) => {
+            productId = products.id;
+        })
+        const product = await db.Products.create({
+            name: req.body.name,
+            price: req.body.price,
+        }).then(async (result) => {
+            try {
+                const arr = req.body.payload;
+                arr.forEach((item) => {
+                    Object.assign(item, { productId });
+                });
+                await db.ItemsInProducts.bulkCreate(arr)
+                    .then((result) => res.status(201).json(result));
             } catch (e) {
                 console.log(e);
                 res.status(500).json({
@@ -88,6 +121,7 @@ async function updateProduct(req, res) {
         }
         await product.update({
             name: req.body.name,
+            price: req.body.price,
             netCost: req.body.netCost,
             ItemsInProducts: {
                 itemId: req.body.itemId,

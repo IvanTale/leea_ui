@@ -9,6 +9,8 @@ router.route('/').get(productsController.getProducts);
 
 router.route('/').post(productsController.addProduct);
 
+router.route('/bulkAdd').post(productsController.addProductBulk);
+
 router.route('/addItems').post(productsController.addItemToProduct);
 
 router.route('/:id').put(productsController.updateProduct);
