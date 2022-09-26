@@ -1,11 +1,19 @@
-<div class="card">
-	<div class="card-body">
-		<ul class="list-group">
-			<li class="list-group-item">An item</li>
-			<li class="list-group-item">A second item</li>
-			<li class="list-group-item">A third item</li>
-			<li class="list-group-item">A fourth item</li>
-			<li class="list-group-item">And a fifth one</li>
-		</ul>
+<div class="container">
+	<div class="row">
+		<div class="d-flex flex-column">
+			<div class="le-card d-flex col-12 flex-column p-4 mb-3" *ngFor="let recipe of recipes">
+				<h5>{{recipe.name}}</h5>
+				<div class="d-flex col-12">
+					<div class="d-flex col-6 justify-content-between">
+						<div>Price: <span class="badge bg-primary">{{recipe.price}} lei</span></div>
+						<div>NetCost: <span class="badge bg-secondary">{{recipe.netCost}} lei</span></div>
+					</div>
+					<div class="d-flex col-6 justify-content-evenly">
+						<button type="button" class="btn btn-sm btn-primary" [routerLink]="['/item', recipe.id]">View</button>
+						<button type="button" class="btn btn-sm btn-secondary">Remove</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>

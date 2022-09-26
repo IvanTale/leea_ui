@@ -7,6 +7,7 @@ import { LayoutRoutingModule } from "./layout-routing.module";
 import { RecipeService } from "../recipe/recipe.service";
 import {LayoutComponent} from "./layout.component";
 import {RecipeModule} from "../recipe/recipe.module";
+import {HttpClientModule} from "@angular/common/http";
 
 @NgModule({
 	declarations: [
@@ -19,6 +20,7 @@ import {RecipeModule} from "../recipe/recipe.module";
 		RouterModule,
 		LayoutRoutingModule,
 		RecipeModule,
+		HttpClientModule,
 	],
 	providers: [
 		RecipeService,
