@@ -5,14 +5,16 @@ const router = express.Router();
 
 module.exports = router;
 
-router.route('/').get(productsController.getProducts);
+router.route('/')
+		.get(productsController.getProducts)
+		.post(productsController.addProduct);
 
-router.route('/:id').get(productsController.getProduct);
+router.route('/:id')
+		.get(productsController.getProduct)
+		.put(productsController.updateProduct);
 
-router.route('/').post(productsController.addProduct);
+router.route('/bulkAdd')
+		.post(productsController.addProductBulk);
 
-router.route('/bulkAdd').post(productsController.addProductBulk);
-
-router.route('/addItems').post(productsController.addItemToProduct);
-
-router.route('/:id').put(productsController.updateProduct);
+router.route('/addItems')
+		.post(productsController.addItemToProduct);

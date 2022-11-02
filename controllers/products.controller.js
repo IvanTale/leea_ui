@@ -11,7 +11,7 @@ module.exports = {
 }
 
 async function getProduct(req, res) {
-        const id = req.params.id;
+        const { id } = req.params;
     try {
         const product = await db.Products.findOne({
             where: {
@@ -27,11 +27,9 @@ async function getProduct(req, res) {
                     //     'qty',
                     //     [Sequelize.col('Item.*')]
                     // ],
-                    attributes: { include: [Sequelize.col('Items.*')] },
+                    // attributes: { include: [Sequelize.col('Items.*')] },
                     where: {
-                        productId: {
-                            [Sequelize.Op.eq]: id
-                        }
+                        productId: id,
                     },
                     include: [{
                             model: db.Items,
