@@ -3,10 +3,51 @@ const Sequelize = require('sequelize');
 
 module.exports = {
     getProducts,
+    getProduct,
     addProduct,
     addItemToProduct,
     updateProduct,
     addProductBulk,
+}
+
+async function getProduct(req, res) {
+        const id = req.params.id;
+    try {
+        const product = await db.Products.findOne({
+            where: {
+                id: parseInt(id, 10),
+            },
+            // raw: true,
+            // nested:true,
+            include: [
+                {
+                    model: db.ItemsInProducts,
+                    // attributes: [
+                    //     'itemId',
+                    //     'qty',
+                    //     [Sequelize.col('Item.*')]
+                    // ],
+                    attributes: { include: [Sequelize.col('Items.*')] },
+                    where: {
+                        productId: {
+                            [Sequelize.Op.eq]: id
+                        }
+                    },
+                    include: [{
+                            model: db.Items,
+                            attributes: ['id', 'createdAt', 'updatedAt'],
+                        }
+                    ],
+                }
+            ]
+        });
+        res.status(200).json( product );
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            message: "Server error"
+        })
+    }
 }
 
 async function getProducts(req,res) {

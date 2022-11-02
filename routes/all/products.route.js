@@ -7,6 +7,8 @@ module.exports = router;
 
 router.route('/').get(productsController.getProducts);
 
+router.route('/:id').get(productsController.getProduct);
+
 router.route('/').post(productsController.addProduct);
 
 router.route('/bulkAdd').post(productsController.addProductBulk);
