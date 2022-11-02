@@ -23,4 +23,8 @@ export class RecipeService {
 	public getRecipe() {
 		return this.http.get<IRecipe[]>('api/products');
 	}
+
+	public getItem(id: string | null) {
+		return this.http.get<IRecipe>(`api/products/${id}`)
+	}
 }
