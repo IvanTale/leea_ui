@@ -13,8 +13,5 @@ router.route('/:id')
 		.get(productsController.getProduct)
 		.put(productsController.updateProduct);
 
-router.route('/bulkAdd')
-		.post(productsController.addProductBulk);
-
 router.route('/addItems')
 		.post(productsController.addItemToProduct);

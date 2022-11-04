@@ -1,39 +1,32 @@
 const db = require('../database/models');
 const Sequelize = require('sequelize');
+const ProductService = require('../services/products/products.service');
 
 module.exports = {
     getProducts,
     getProduct,
-    addProduct,
     addItemToProduct,
     updateProduct,
-    addProductBulk,
+    addProduct,
 }
 
 async function getProduct(req, res) {
-        const { id } = req.params;
+    const { id } = req.params;
     try {
         const product = await db.Products.findOne({
             where: {
                 id: parseInt(id, 10),
             },
-            // raw: true,
-            // nested:true,
             include: [
                 {
                     model: db.ItemsInProducts,
-                    // attributes: [
-                    //     'itemId',
-                    //     'qty',
-                    //     [Sequelize.col('Item.*')]
-                    // ],
-                    // attributes: { include: [Sequelize.col('Items.*')] },
+                    attributes: [['qty', 'quantity']],
                     where: {
                         productId: id,
                     },
                     include: [{
                             model: db.Items,
-                            attributes: ['id', 'createdAt', 'updatedAt'],
+                            attributes: ['id', ['item', 'name'], 'price', 'onHand'],
                         }
                     ],
                 }
@@ -42,9 +35,7 @@ async function getProduct(req, res) {
         res.status(200).json( product );
     } catch (e) {
         console.log(e);
-        res.status(500).json({
-            message: "Server error"
-        })
+        res.status(500).json(e)
     }
 }
 
@@ -62,66 +53,33 @@ async function getProducts(req,res) {
 
 async function addProduct(req, res) {
     try {
-        const product = await db.Products.create({
-            name: req.body.name,
-            price: req.body.price,
-        }).then(async (result) => {
-            try {
-                let itemToProduct;
-                await db.ItemsInProducts.create({
-                    itemId: req.body.itemId,
-                    productId: result.id,
-                    qty: req.body.qty,
-                }).then((res) => itemToProduct = res);
-                res.status(201).json({itemToProduct})
-            } catch (e) {
-                console.log(e);
-                res.status(500).json({
-                    message: "Server error"
-                })
-            }
-        });
-        res.status(201).json({ product })
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({
-            message: "Server error"
-        })
-    }
-}
-
-async function addProductBulk(req, res) {
-    try {
         let productId;
         db.Products.afterCreate((products, option) => {
             productId = products.id;
         })
-        const product = await db.Products.create({
-            name: req.body.name,
-            price: req.body.price,
-        }).then(async (result) => {
-            try {
-                const arr = req.body.payload;
-                arr.forEach((item) => {
-                    Object.assign(item, { productId });
-                });
-                await db.ItemsInProducts.bulkCreate(arr)
-                    .then((result) => res.status(201).json(result));
-            } catch (e) {
-                console.log(e);
-                res.status(500).json({
-                    message: "Server error"
-                })
+        const product = await ProductService.createProduct(req.body);
+        const { items } = req.body;
+        items.forEach((item) => {
+            Object.assign(item, { productId });
+        });
+        const addedItems = await ProductService.bulkCreate(items);
+        res.status(201).json({
+            data: {
+                product,
+                addedItems
             }
         });
-        res.status(201).json({ product })
     } catch (e) {
         console.log(e);
         res.status(500).json({
-            message: "Server error"
+            message: e,
         })
     }
 }
+
+// async function updateProduct(req, res)) {
+//
+// }
 
 async function addItemToProduct(req, res) {
     try {
